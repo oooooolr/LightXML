@@ -2,7 +2,7 @@ import tqdm
 import time
 import cProfile
 import numpy as np
-from apex import amp
+# from apex import amp
 
 import torch
 from torch import nn
@@ -26,10 +26,10 @@ def get_bert(bert_name):
         model_config.output_hidden_states = True
         bert = XLNetModel.from_pretrained('xlnet-base-cased', config=model_config)
     else:
-        print('load bert-base-uncased')
-        model_config = BertConfig.from_pretrained('bert-base-uncased')
+        print('load bert-base-chinese')
+        model_config = BertConfig.from_pretrained('bert-base-chinese')
         model_config.output_hidden_states = True
-        bert = BertModel.from_pretrained('bert-base-uncased', config=model_config)
+        bert = BertModel.from_pretrained('bert-base-chinese', config=model_config)
     return bert
 
 class LightXML(nn.Module):
@@ -194,7 +194,7 @@ class LightXML(nn.Module):
             tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
         else:
             print('load bert-base-uncased tokenizer')
-            tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+            tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
         return tokenizer
 
     def get_accuracy(self, candidates, logits, labels):
@@ -263,9 +263,11 @@ class LightXML(nn.Module):
                     loss = outputs[1]
                     loss /= self.update_count
                     train_loss += loss.item()
+                    
+                    loss.backward()
 
-                    with amp.scale_loss(loss, optimizer) as scaled_loss:
-                        scaled_loss.backward()
+#                     with amp.scale_loss(loss, optimizer) as scaled_loss:
+#                         scaled_loss.backward()
     
                     if step % self.update_count == 0:
                         optimizer.step()
